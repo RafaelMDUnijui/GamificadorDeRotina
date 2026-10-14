@@ -1,25 +1,37 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';     
 import TaskCard from '@/components/TaskCard';
-import Modal from '@/components/Modal';          // C6
+import Modal from '@/components/Modal';
+import Header from '@/components/Header';        
 import { api } from '@/lib/api';
 import { today } from '@/lib/streak';
+import { getSession, logout } from '@/lib/auth';   
 
 export default function Tarefas() {
+  const router = useRouter();                       
+  const [user, setUser] = useState(null);          // dados de quem está logado
   const [tasks, setTasks] = useState(null);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
   const [freq, setFreq] = useState('all');
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
-  const [toDelete, setToDelete] = useState(null);  // C6: tarefa que o modal vai excluir
+  const [toDelete, setToDelete] = useState(null);  //  tarefa que o modal vai excluir
 
   const load = () => {
     setError('');
     api.list().then(setTasks).catch((e) => setError(e.message));
   };
-  useEffect(() => { load(); }, []);
+
+  // só carrega as tarefas se houver sessão; senão volta para o login
+  useEffect(() => {
+    const s = getSession();
+    if (!s) return router.replace('/');
+    setUser(s);
+    load();
+  }, []);
 
   // NÃO é state, é calculado a cada desenho a partir de tasks, q e freq
   const shown = (tasks || []).filter(
@@ -59,7 +71,15 @@ export default function Tarefas() {
 
   return (
     <div className="wrap">
-      <main>
+      {/* cabeçalho fixo no topo */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 5, background: 'var(--bg)', padding: '0 16px' }}>
+        <Header
+          name={user?.name || user?.email}
+          onLogout={() => { logout(); router.push('/'); }}
+        />
+      </div>
+
+      <main style={{ paddingTop: 72 }}>
         <div className="actions" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1>Minhas tarefas</h1>
@@ -67,7 +87,7 @@ export default function Tarefas() {
           </div>
           <div className="actions">
             <button className="btn ghost" onClick={load}>🔄</button>
-            <Link className="btn" href="/tarefas/nova" style={{ outline: 'none' }}>Nova tarefa</Link>
+            <Link className="btn" href="/tarefas/nova" tabIndex={2} style={{ outline: 'none' }}>Nova tarefa</Link>
           </div>
         </div>
 
@@ -108,7 +128,7 @@ export default function Tarefas() {
         )}
         <ul className="list">
           {shown.map((t) => (
-            <TaskCard key={t.id} task={t} busy={busy} onToggle={toggle} onDelete={() => {}} />
+            <TaskCard key={t.id} task={t} busy={busy} onToggle={toggle} onDelete={setToDelete} />
           ))}
         </ul>
       </main>
