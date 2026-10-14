@@ -1,69 +1,232 @@
-import Image from "next/image";
 
-export default function Home() {
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getUsers, saveUser, setSession } from "@/lib/auth";
+
+type Mode = "login" | "register";
+
+export default function Login() {
+  const [mode, setMode] = useState<Mode>("login");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const router = useRouter(); 
+  const [v, setV] = useState({
+    name: "",
+    email: "",
+    password: "",
+  confirm: "",
+});
+
+const trocar = (novoMode: Mode) => {
+  setMode(novoMode);
+  setErrors({});
+};
+
+  
+function validar() {
+  const er: Record<string, string> = {};
+
+  if (mode === "register" && v.name.trim().length < 2) {
+    er.name = "Informe um nome com pelo menos 2 caracteres.";
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(v.email)) {
+    er.email = "Informe um e-mail válido.";
+  }
+
+  if (v.password.length < 6) {
+    er.password = "A senha precisa ter pelo menos 6 caracteres.";
+  }
+
+  if (mode === "register" && v.confirm !== v.password) {
+  er.confirm = "As senhas não conferem.";
+}
+
+  return er;
+}
+
+
+function submit(e: React.SubmitEvent<HTMLFormElement>) {
+  e.preventDefault();
+
+  const er = validar();
+
+  if (Object.keys(er).length > 0) {
+    setErrors(er);
+    return;
+  }
+
+  // 2. Procura o usuário cadastrado
+  const usuarios = getUsers();
+  const email = v.email.trim().toLowerCase();
+
+  const usuarioExistente = usuarios.find(
+    (usuario) => usuario.email.toLowerCase() === email
+  );
+
+  if (mode === "register") {
+    if (usuarioExistente) {
+      setErrors({ email: "Este e-mail já está cadastrado." });
+      return;
+    }
+
+    const novoUsuario = {
+      name: v.name.trim(),
+      email,
+      password: v.password,
+    };
+
+    saveUser(novoUsuario);
+    setSession(novoUsuario);
+  }
+
+  else {
+    if (!usuarioExistente || usuarioExistente.password !== v.password) {
+      setErrors({ password: "E-mail ou senha incorretos." });
+      return;
+    }
+
+    setSession(usuarioExistente);
+  }
+
+  // 5. Login/cadastro concluído
+  setErrors({});
+  router.push("/tarefas");
+}
+
+
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div
+     className="flex min-h-screen items-center justify-center bg-gray-100 p-4"
+    >
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          Rotina
+        </h1>
+
+        <p className="mb-6 text-gray-600">
+          Organize suas tarefas e mantenha sua sequência!
+        </p>
+
+        <div className="mb-6 flex gap-2" role="group" aria-label="Acesso">
+          <button
+            type="button"
+            aria-pressed={mode === "login"}
+            onClick={() => trocar("login")}
+            className="flex-1 rounded-lg bg-teal-700 p-3 text-white"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+            Entrar
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={mode === "register"}
+            onClick={() => trocar("register")}
+            className="flex-1 rounded-lg bg-teal-700 p-3 text-white"
+          >
+            Criar conta
+          </button>
+        </div>
+
+        <form noValidate onSubmit={submit}>
+          {mode === "register" && (
+            <div className="mb-4">
+              <label htmlFor="name" className="mb-1 block text-gray-900">
+                Nome
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={v.name}
+                onChange={(e) => setV({ ...v, name: e.target.value })}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
+                className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
+              />
+              {errors.name && (
+                <p id="name-error" role="alert" className="mt-1 text-sm text-red-700">
+                  {errors.name}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="mb-4">
+            <label htmlFor="email" className="mb-1 block text-gray-900">
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={v.email}
+              onChange={(e) => setV({ ...v, email: e.target.value })}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
+              className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {errors.email && (
+              <p id="email-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="password" className="mb-1 block text-gray-900">
+              Senha
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={v.password}
+              onChange={(e) => setV({ ...v, password: e.target.value })}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
+              className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
+            />
+            {errors.password && (
+              <p id="password-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.password}
+              </p>
+            )}
+          </div>
+
+            {mode === "register" && (
+          <div className="mb-6">
+            <label htmlFor="confirm" className="mb-1 block text-gray-900">
+            Confirmar senha
+            </label>
+
+            <input
+            id="confirm"
+            type="password"
+            value={v.confirm}
+            onChange={(e) => setV({ ...v, confirm: e.target.value })}
+            aria-invalid={!!errors.confirm}
+            aria-describedby={errors.confirm ? "confirm-error" : undefined}
+            autoComplete="new-password"
+            className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
+            />
+
+            {errors.confirm && (
+              <p id="confirm-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.confirm}
+             </p>
+            )}
+          </div>
+            )}
+
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-teal-700 p-3 font-bold text-white"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {mode === "login" ? "Entrar" : "Criar conta"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
