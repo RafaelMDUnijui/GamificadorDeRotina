@@ -2,16 +2,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import TaskCard from '@/components/TaskCard';
+import Modal from '@/components/Modal';          // C6
 import { api } from '@/lib/api';
-import { today } from '@/lib/streak';        // 
+import { today } from '@/lib/streak';
 
 export default function Tarefas() {
-  const [tasks, setTasks] = useState(null);   // null = ainda carregando
+  const [tasks, setTasks] = useState(null);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
   const [freq, setFreq] = useState('all');
-  const [busy, setBusy] = useState(false);    // requisição em andamento
-  const [toast, setToast] = useState('');     // mensagem rápida
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState('');
+  const [toDelete, setToDelete] = useState(null);  // C6: tarefa que o modal vai excluir
 
   const load = () => {
     setError('');
@@ -41,6 +43,18 @@ export default function Tarefas() {
       avisar(e.message);
     }
     setBusy(false);
+  }
+
+  // exclui de verdade (só chamada pelo botão do modal)
+  async function remove() {
+    try {
+      await api.remove(toDelete.id);
+      setTasks((lista) => lista.filter((x) => x.id !== toDelete.id));
+      avisar('Tarefa excluída.');
+    } catch (e) {
+      avisar(e.message);
+    }
+    setToDelete(null);   // fecha o modal
   }
 
   return (
@@ -98,6 +112,18 @@ export default function Tarefas() {
           ))}
         </ul>
       </main>
+
+      {/* modal de confirmação */}
+      <Modal open={!!toDelete} title="Excluir tarefa?" onClose={() => setToDelete(null)}>
+        <span onClick={() => setToDelete(null)} style={{ float: 'right', cursor: 'pointer' }}>✕</span>
+        <p style={{ color: '#999' }}>"{toDelete?.name}" e a sequência dela serão apagadas.</p>
+        <div className="actions" style={{ marginTop: 16 }}>
+          <button className="btn" style={{ background: '#e57373', borderColor: '#e57373', color: '#fff' }} onClick={remove}>
+            Excluir
+          </button>
+          <button className="btn ghost" onClick={() => setToDelete(null)}>Cancelar</button>
+        </div>
+      </Modal>
 
       {/* aviso rápido */}
       {toast && (
