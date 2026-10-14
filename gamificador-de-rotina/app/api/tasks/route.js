@@ -24,7 +24,7 @@ export async function POST(req) {
   if (nomeDuplicado(body.name)) {
     return NextResponse.json({ message: 'Já existe uma tarefa com esse nome.', errors: { name: 'Já existe uma tarefa com esse nome.' } }, { status: 409 });
   }
-  const task = { ...body, target: Number(body.target), id: crypto.randomUUID(), checkins: [] };
+    const task = { ...body, target: Number(body.target), days: cleanDays(body.days), id: crypto.randomUUID(), checkins: [] };
   db.push(task);
   return NextResponse.json(task, { status: 201 });
 }

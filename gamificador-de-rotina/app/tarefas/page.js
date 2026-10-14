@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';     
 import TaskCard from '@/components/TaskCard';
@@ -7,11 +7,12 @@ import Modal from '@/components/Modal';
 import Header from '@/components/Header';        
 import { api } from '@/lib/api';
 import { today } from '@/lib/streak';
-import { getSession, logout } from '@/lib/auth';   
+import { getSession, logout } from '@/lib/auth';
+import { useSession } from '@/lib/use-session';  
 
 export default function Tarefas() {
   const router = useRouter();                       
-  const [user, setUser] = useState(null);          // dados de quem está logado
+  const user = useSession();                       // dados de quem está logado
   const [tasks, setTasks] = useState(null);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
@@ -20,18 +21,25 @@ export default function Tarefas() {
   const [toast, setToast] = useState('');
   const [toDelete, setToDelete] = useState(null);  //  tarefa que o modal vai excluir
 
-  const load = () => {
-    setError('');
+  // busca as tarefas na API (usada na carga inicial)
+  const load = useCallback(() => {
     api.list().then(setTasks).catch((e) => setError(e.message));
+  }, []);
+
+  // recarga manual (botão 🔄 e "Tentar de novo"): limpa o erro antes de buscar
+  const retry = () => {
+    setError('');
+    load();
   };
 
   // só carrega as tarefas se houver sessão; senão volta para o login
   useEffect(() => {
-    const s = getSession();
-    if (!s) return router.replace('/');
-    setUser(s);
+    if (!getSession()) {
+      router.replace('/');
+      return;
+    }
     load();
-  }, []);
+  }, [router, load]);
 
   // NÃO é state, é calculado a cada desenho a partir de tasks, q e freq
   const shown = (tasks || []).filter(
@@ -74,7 +82,7 @@ export default function Tarefas() {
       {/* cabeçalho fixo no topo */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 5, background: 'var(--bg)', padding: '0 16px' }}>
         <Header
-          nomeUsuario={user?.name || user?.email}
+          nomeUsuario={user?.name || user?.email || ''}
           onLogout={() => { logout(); router.push('/'); }}
         />
       </div>
@@ -86,7 +94,7 @@ export default function Tarefas() {
             <p style={{ color: '#aaa' }}>Acompanhe suas sequências</p>
           </div>
           <div className="actions">
-            <button className="btn ghost" onClick={load}>🔄</button>
+            <button className="btn ghost" onClick={retry}>🔄</button>
             <Link className="btn" href="/tarefas/nova" tabIndex={2} style={{ outline: 'none' }}>Nova tarefa</Link>
           </div>
         </div>
@@ -116,7 +124,7 @@ export default function Tarefas() {
 
         {error && (
           <div className="alert">
-            {error} <div className="btn ghost" onClick={load}>Tentar de novo</div>
+            {error} <div className="btn ghost" onClick={retry}>Tentar de novo</div>
           </div>
         )}
         {!tasks && !error && <p>Carregando tarefas…</p>}
@@ -136,7 +144,7 @@ export default function Tarefas() {
       {/* modal de confirmação */}
       <Modal open={!!toDelete} title="Excluir tarefa?" onClose={() => setToDelete(null)}>
         <span onClick={() => setToDelete(null)} style={{ float: 'right', cursor: 'pointer' }}>✕</span>
-        <p style={{ color: '#999' }}>"{toDelete?.name}" e a sequência dela serão apagadas.</p>
+        <p style={{ color: '#999' }}>&quot;{toDelete?.name}&quot; e a sequência dela serão apagadas.</p>
         <div className="actions" style={{ marginTop: 16 }}>
           <button className="btn" style={{ background: '#e57373', borderColor: '#e57373', color: '#fff' }} onClick={remove}>
             Excluir
