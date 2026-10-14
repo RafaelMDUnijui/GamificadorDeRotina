@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateTask } from '@/lib/validate';
-import { nomeDuplicado } from '@/lib/tasks';
+import { nomeDuplicado, filterTasks, FREQUENCIES } from '@/lib/tasks';
 
 // GET /api/tasks: devolve a lista de tarefas
-export async function GET() {
-  return NextResponse.json(db);
+// GET /api/tasks?frequency=weekly&q=violão&category=Lazer  (filtros opcionais)
+export async function GET(req) {
+  const p = req.nextUrl.searchParams;
+  const frequency = p.get('frequency') || '';
+  if (frequency && !FREQUENCIES.includes(frequency)) {
+    return NextResponse.json({ message: 'Frequência inválida. Use daily, weekly ou monthly.' }, { status: 400 });
+  }
+  return NextResponse.json(filterTasks(db, { frequency, q: p.get('q') || '', category: p.get('category') || '' }));
 }
 
 // POST /api/tasks: cria uma tarefa nova
