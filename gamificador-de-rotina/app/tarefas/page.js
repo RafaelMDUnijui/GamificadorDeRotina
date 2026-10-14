@@ -74,7 +74,7 @@ export default function Tarefas() {
       {/* cabeçalho fixo no topo */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 5, background: 'var(--bg)', padding: '0 16px' }}>
         <Header
-          name={user?.name || user?.email}
+          nomeUsuario={user?.name || user?.email}
           onLogout={() => { logout(); router.push('/'); }}
         />
       </div>
