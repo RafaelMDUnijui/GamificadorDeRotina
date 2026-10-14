@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import StreakBadge from './StreakBadge';
+import WeekDots from './WeekDots';
 import { progress, today, UNIT, PERIOD } from '@/lib/streak';
 
 export default function TaskCard({ task, onToggle, onDelete, busy }) {
@@ -13,6 +14,7 @@ export default function TaskCard({ task, onToggle, onDelete, busy }) {
       <div>
         <h2>{task.name}</h2>
         <p className="meta">{task.category} · lembrete às {task.time} · meta: {task.target}x por {UNIT[task.frequency]}</p>
+        <WeekDots task={task} />
         <div className="bar" role="progressbar" aria-label={`Progresso ${PERIOD[task.frequency]}`}
              aria-valuemin={0} aria-valuemax={task.target} aria-valuenow={Math.min(p, task.target)}>
           <i style={{ width: `${Math.min(100, (p / task.target) * 100)}%` }} />
