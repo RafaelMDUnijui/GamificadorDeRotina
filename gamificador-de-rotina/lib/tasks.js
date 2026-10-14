@@ -1,14 +1,14 @@
 import { db } from './db';
 
-// Nome repetido? Ignora maiúsculas/minúsculas e espaços nas pontas.
-// ignoreId evita que a própria tarefa seja considerada duplicada ao editar (PUT).
-export const nomeDuplicado = (name, ignoreId) => {
-  const alvo = String(name).trim().toLowerCase();
-  return db.some((t) => t.id !== ignoreId && t.name.trim().toLowerCase() === alvo);
-};
-
 // tira acentos e põe em minúsculas: "Violão" e "violao" viram o mesmo texto
 const norm = (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+// Nome repetido? Ignora maiúsculas/minúsculas, acentos e espaços nas pontas.
+// ignoreId evita que a própria tarefa seja considerada duplicada ao editar (PUT).
+export const nomeDuplicado = (name, ignoreId) => {
+  const alvo = norm(name).trim();
+  return db.some((t) => t.id !== ignoreId && norm(t.name).trim() === alvo);
+};
 
 export const FREQUENCIES = ['daily', 'weekly', 'monthly'];
 
