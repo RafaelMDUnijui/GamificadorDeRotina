@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-12">
+    <div className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="max-w-md text-center">
         <h1 className="text-6xl font-bold text-blue-700 dark:text-blue-300">
           404
@@ -23,6 +23,6 @@ export default function NotFound() {
           Voltar para o início
         </Link>
       </div>
-    </main>
+    </div>
   );
 }
