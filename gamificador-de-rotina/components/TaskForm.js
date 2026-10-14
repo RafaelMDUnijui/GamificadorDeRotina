@@ -28,7 +28,7 @@ export default function TaskForm({ task, onDirtyChange, onCancel }) {
   // a cada mudança, compara com a foto inicial e avisa a página
   useEffect(() => {
     onDirtyChange?.(JSON.stringify(v) !== inicial.current);
-  }, [v]);
+  }, [v, onDirtyChange]);
 
   // marca ou desmarca um dia da semana
   const toggleDay = (k) =>
@@ -45,7 +45,8 @@ export default function TaskForm({ task, onDirtyChange, onCancel }) {
     }
     setSaving(true);
     try {
-      task ? await api.update(task.id, v) : await api.create(v);
+      if (task) await api.update(task.id, v);
+      else await api.create(v);
       router.push('/tarefas');
     } catch (err) {
       const apiErrors = err.errors || {};

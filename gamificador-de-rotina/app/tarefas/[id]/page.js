@@ -34,7 +34,7 @@ export default function Editar({ params }) {
       return;
     }
     if (!isNew) api.get(id).then(setTask).catch((e) => setError(e.message));
-  }, [id]);
+  }, [id, isNew, router]);
 
   return (
     <div className="wrap">
