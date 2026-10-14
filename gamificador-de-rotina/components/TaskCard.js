@@ -1,16 +1,15 @@
 import Link from 'next/link';
 import StreakBadge from './StreakBadge';
-import { streak, progress, today, UNIT, PERIOD } from '@/lib/streak';
+import { progress, today, UNIT, PERIOD } from '@/lib/streak';
 
 export default function TaskCard({ task, onToggle, onDelete, busy }) {
-  const s = streak(task);
   const p = progress(task);
   const cumprida = p >= task.target;
   const feitaHoje = task.checkins.includes(today());
 
   return (
     <li className="card task">
-      <StreakBadge value={s} frequency={task.frequency} />
+      <StreakBadge task={task} />
       <div>
         <h2>{task.name}</h2>
         <p className="meta">{task.category} · lembrete às {task.time} · meta: {task.target}x por {UNIT[task.frequency]}</p>
