@@ -16,7 +16,8 @@ export default function Login() {
     name: "",
     email: "",
     password: "",
-  });
+  confirm: "",
+});
 
 const trocar = (novoMode: Mode) => {
   setMode(novoMode);
@@ -38,6 +39,10 @@ function validar() {
   if (v.password.length < 6) {
     er.password = "A senha precisa ter pelo menos 6 caracteres.";
   }
+
+  if (mode === "register" && v.confirm !== v.password) {
+  er.confirm = "As senhas não conferem.";
+}
 
   return er;
 }
@@ -189,6 +194,31 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
               </p>
             )}
           </div>
+
+            {mode === "register" && (
+          <div className="mb-6">
+            <label htmlFor="confirm" className="mb-1 block text-gray-900">
+            Confirmar senha
+            </label>
+
+            <input
+            id="confirm"
+            type="password"
+            value={v.confirm}
+            onChange={(e) => setV({ ...v, confirm: e.target.value })}
+            aria-invalid={!!errors.confirm}
+            aria-describedby={errors.confirm ? "confirm-error" : undefined}
+            autoComplete="new-password"
+            className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
+            />
+
+            {errors.confirm && (
+              <p id="confirm-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.confirm}
+             </p>
+            )}
+          </div>
+            )}
 
           <button
             type="submit"
