@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { validateTask } from '@/lib/validate';
+import { validateTask, cleanDays } from '@/lib/validate';
 import { nomeDuplicado, filterTasks, FREQUENCIES } from '@/lib/tasks';
 
 // GET /api/tasks: devolve a lista de tarefas

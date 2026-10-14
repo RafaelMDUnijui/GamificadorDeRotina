@@ -1,0 +1,6 @@
+/* dias da semana no formulário (CSS Module: não altera o globals.css da Pessoa 5) */
+.days { border: 0; padding: 0; margin: 0 0 14px; }
+.days legend { font-weight: 700; margin-bottom: 6px; padding: 0; }
+.daysList { display: flex; gap: 8px; flex-wrap: wrap; }
+.day { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 2px solid var(--line, #d9d2c3); border-radius: 8px; cursor: pointer; }
+.day input { width: 20px; height: 20px; accent-color: var(--accent, #0b5f5a); }

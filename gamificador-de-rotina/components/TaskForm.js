@@ -3,23 +3,28 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Field from './Field';
 import { api } from '@/lib/api';
-import { CATEGORIES, PLAN_MAX, validateTask } from '@/lib/validate';
+import { CATEGORIES, PLAN_MAX, WEEKDAYS, validateTask } from '@/lib/validate';
+import styles from './TaskForm.module.css';
 
-const EMPTY = { name: '', category: '', frequency: 'daily', target: 1, time: '', plan: '' };
+const EMPTY = { name: '', category: '', frequency: 'daily', target: 1, time: '', plan: '', days: [] };
 
 // Mesmo formulário para criar (task = null) e editar
 export default function TaskForm({ task }) {
   const router = useRouter();
-  const [v, setV] = useState(task || EMPTY);       // valores dos campos
-  const [errors, setErrors] = useState({});         // erros por campo
-  const [apiError, setApiError] = useState('');     // erro geral vindo da API
-  const [saving, setSaving] = useState(false);      // está enviando?
+  const [v, setV] = useState({ ...EMPTY, ...task }); // valores dos campos
+  const [errors, setErrors] = useState({});          // erros por campo
+  const [apiError, setApiError] = useState('');      // erro geral vindo da API
+  const [saving, setSaving] = useState(false);       // está enviando?
 
   // set('name') devolve a função que atualiza só o campo 'name'
   const set = (k) => (e) => {
     const val = e.target.value;
     setV((o) => ({ ...o, [k]: val, ...(k === 'frequency' && val === 'daily' ? { target: 1 } : {}) }));
   };
+
+  // marca ou desmarca um dia da semana
+  const toggleDay = (k) =>
+    setV((o) => ({ ...o, days: o.days.includes(k) ? o.days.filter((d) => d !== k) : [...o.days, k] }));
 
   async function submit(e) {
     e.preventDefault();
@@ -34,7 +39,7 @@ export default function TaskForm({ task }) {
     try {
       task ? await api.update(task.id, v) : await api.create(v);
       router.push('/tarefas');
-      } catch (err) {
+    } catch (err) {
       const apiErrors = err.errors || {};
       setErrors(apiErrors);
       setApiError(err.message);
@@ -62,7 +67,21 @@ export default function TaskForm({ task }) {
           disabled={v.frequency === 'daily'} hint="Ex.: 4 vezes por semana." />
         <Field id="time" label="Horário do lembrete" type="time" value={v.time} onChange={set('time')} error={errors.time} required />
       </div>
-        <Field id="plan" label="Planejamento (opcional)" as="textarea" rows={3} value={v.plan} onChange={set('plan')} error={errors.plan} hint={<>O que fazer em cada dia. <span style={v.plan.length > PLAN_MAX ? { color: 'var(--err)', fontWeight: 700 } : undefined}>{v.plan.length}/{PLAN_MAX} caracteres{v.plan.length > PLAN_MAX && ' (limite excedido)'}</span></>} />
+
+      <fieldset className={styles.days}>
+        <legend>Dias da semana (opcional)</legend>
+        <div className={styles.daysList}>
+          {WEEKDAYS.map((d) => (
+            <label key={d.key} className={styles.day}>
+              <input type="checkbox" name="days" value={d.key} checked={v.days.includes(d.key)} onChange={() => toggleDay(d.key)} />
+              {d.label}
+            </label>
+          ))}
+        </div>
+        {errors.days && <span className="err" role="alert">{errors.days}</span>}
+      </fieldset>
+
+      <Field id="plan" label="Planejamento (opcional)" as="textarea" rows={3} value={v.plan} onChange={set('plan')} error={errors.plan} hint={<>O que fazer em cada dia. <span style={v.plan.length > PLAN_MAX ? { color: 'var(--err)', fontWeight: 700 } : undefined}>{v.plan.length}/{PLAN_MAX} caracteres{v.plan.length > PLAN_MAX && ' (limite excedido)'}</span></>} />
       <div className="actions">
         <button className="btn" disabled={saving}>{saving ? 'Salvando…' : task ? 'Salvar alterações' : 'Criar tarefa'}</button>
         <button type="button" className="btn ghost" onClick={() => router.push('/tarefas')}>Cancelar</button>
