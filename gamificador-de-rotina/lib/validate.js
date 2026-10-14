@@ -1,4 +1,5 @@
 export const CATEGORIES = ['Saúde', 'Trabalho', 'Estudos', 'Lazer', 'Casa'];
+export const PLAN_MAX = 300;
 const MAX = { daily: 1, weekly: 7, monthly: 31 };
 
 // usado no cliente (formulário) e no servidor (API)
@@ -12,6 +13,6 @@ export function validateTask(b) {
   if (!Number.isInteger(t) || t < 1) e.target = 'Informe quantas vezes (mínimo 1).';
   else if (MAX[b.frequency] && t > MAX[b.frequency]) e.target = `O máximo para esta frequência é ${MAX[b.frequency]}.`;
   if (!/^\d{2}:\d{2}$/.test(b.time || '')) e.time = 'Informe o horário do lembrete.';
-  if ((b.plan || '').length > 300) e.plan = 'O planejamento aceita até 300 caracteres.';
+    if ((b.plan || '').length > PLAN_MAX) e.plan = `O planejamento aceita até ${PLAN_MAX} caracteres.`;
   return e;
 }

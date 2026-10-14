@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Field from './Field';
 import { api } from '@/lib/api';
-import { CATEGORIES, validateTask } from '@/lib/validate';
+import { CATEGORIES, PLAN_MAX, validateTask } from '@/lib/validate';
 
 const EMPTY = { name: '', category: '', frequency: 'daily', target: 1, time: '', plan: '' };
 
@@ -62,7 +62,7 @@ export default function TaskForm({ task }) {
           disabled={v.frequency === 'daily'} hint="Ex.: 4 vezes por semana." />
         <Field id="time" label="Horário do lembrete" type="time" value={v.time} onChange={set('time')} error={errors.time} required />
       </div>
-      <Field id="plan" label="Planejamento (opcional)" as="textarea" rows={3} value={v.plan} onChange={set('plan')} error={errors.plan} hint="O que fazer em cada dia. Máx. 300 caracteres." />
+        <Field id="plan" label="Planejamento (opcional)" as="textarea" rows={3} value={v.plan} onChange={set('plan')} error={errors.plan} hint={<>O que fazer em cada dia. <span style={v.plan.length > PLAN_MAX ? { color: 'var(--err)', fontWeight: 700 } : undefined}>{v.plan.length}/{PLAN_MAX} caracteres{v.plan.length > PLAN_MAX && ' (limite excedido)'}</span></>} />
       <div className="actions">
         <button className="btn" disabled={saving}>{saving ? 'Salvando…' : task ? 'Salvar alterações' : 'Criar tarefa'}</button>
         <button type="button" className="btn ghost" onClick={() => router.push('/tarefas')}>Cancelar</button>
