@@ -8,15 +8,51 @@ type Mode = "login" | "register";
 export default function Login() {
   const [mode, setMode] = useState<Mode>("login");
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [v, setV] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  const trocar = (novoMode: Mode) => {
-    setMode(novoMode);
-  };
+const trocar = (novoMode: Mode) => {
+  setMode(novoMode);
+  setErrors({});
+};
+
+  
+function validar() {
+  const er: Record<string, string> = {};
+
+  if (mode === "register" && v.name.trim().length < 2) {
+    er.name = "Informe um nome com pelo menos 2 caracteres.";
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(v.email)) {
+    er.email = "Informe um e-mail válido.";
+  }
+
+  if (v.password.length < 6) {
+    er.password = "A senha precisa ter pelo menos 6 caracteres.";
+  }
+
+  return er;
+}
+
+function submit(e: React.SubmitEvent<HTMLFormElement>) {
+  e.preventDefault();
+
+  const er = validar();
+  setErrors(er);
+
+  if (Object.keys(er).length > 0) {
+    return;
+  }
+
+  console.log("Dados válidos:", v);
+}
+
 
   return (
     <main
@@ -52,7 +88,7 @@ export default function Login() {
           </button>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
+        <form noValidate onSubmit={submit}>
           {mode === "register" && (
             <div className="mb-4">
               <label htmlFor="name" className="mb-1 block text-gray-900">
@@ -63,8 +99,15 @@ export default function Login() {
                 type="text"
                 value={v.name}
                 onChange={(e) => setV({ ...v, name: e.target.value })}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
                 className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
               />
+              {errors.name && (
+                <p id="name-error" role="alert" className="mt-1 text-sm text-red-700">
+                  {errors.name}
+                </p>
+              )}
             </div>
           )}
 
@@ -77,8 +120,15 @@ export default function Login() {
               type="email"
               value={v.email}
               onChange={(e) => setV({ ...v, email: e.target.value })}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
               className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
             />
+            {errors.email && (
+              <p id="email-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div className="mb-6">
@@ -90,8 +140,15 @@ export default function Login() {
               type="password"
               value={v.password}
               onChange={(e) => setV({ ...v, password: e.target.value })}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
               className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
             />
+            {errors.password && (
+              <p id="password-error" role="alert" className="mt-1 text-sm text-red-700">
+                {errors.password}
+              </p>
+            )}
           </div>
 
           <button
