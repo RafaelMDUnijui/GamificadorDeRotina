@@ -23,7 +23,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+            <body className="min-h-full flex flex-col">
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black dark:focus:bg-black dark:focus:text-white"
+        >
+          Pular para o conteúdo
+        </a>
+        <main id="conteudo" className="flex flex-1 flex-col">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
