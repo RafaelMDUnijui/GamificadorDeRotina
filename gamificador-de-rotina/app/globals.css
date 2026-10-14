@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light dark;
   --background: #ffffff;
   --foreground: #171717;
+  --focus: #0f766e;
 }
 
 @theme inline {
@@ -16,6 +18,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --focus: #5eead4;
   }
 }
 
@@ -24,3 +27,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Foco visível para quem navega por teclado */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Respeita quem pediu menos animação no sistema */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
