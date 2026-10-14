@@ -27,7 +27,7 @@ por meio de sequencias de realizacao (streaks).
     npm install
     npm run dev
 
-5. Acessar http://localhost:3000 no navegador.
+5. Acessar https://gamificador-de-rotina.vercel.app/ no navegador.
    Se a porta estiver ocupada, utilizar a porta
    informada pelo terminal.
 
