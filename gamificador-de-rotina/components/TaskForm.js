@@ -34,10 +34,13 @@ export default function TaskForm({ task }) {
     try {
       task ? await api.update(task.id, v) : await api.create(v);
       router.push('/tarefas');
-    } catch (err) {
-      setErrors(err.errors || {});
+      } catch (err) {
+      const apiErrors = err.errors || {};
+      setErrors(apiErrors);
       setApiError(err.message);
       setSaving(false);
+      // erro vindo da API (ex.: 409 nome duplicado): leva o foco ao campo
+      document.getElementById(Object.keys(apiErrors)[0])?.focus();
     }
   }
 

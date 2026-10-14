@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { validateTask } from '@/lib/validate';
+import { nomeDuplicado } from '@/lib/tasks';
 
 // Procura a tarefa pelo id da URL. No Next 15, params é uma Promise, por isso o await.
 const find = async (params) => {
@@ -23,6 +24,9 @@ export async function PUT(req, { params }) {
   const errors = validateTask(body);
   if (Object.keys(errors).length) {
     return NextResponse.json({ message: 'Dados inválidos.', errors }, { status: 400 });
+  }
+  if (nomeDuplicado(body.name, t.id)) {
+    return NextResponse.json({ message: 'Já existe uma tarefa com esse nome.', errors: { name: 'Já existe uma tarefa com esse nome.' } }, { status: 409 });
   }
   Object.assign(t, { ...body, target: Number(body.target), id: t.id, checkins: t.checkins });
   return NextResponse.json(t);
