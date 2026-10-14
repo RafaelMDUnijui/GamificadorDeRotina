@@ -49,8 +49,6 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
   if (Object.keys(er).length > 0) {
     return;
   }
-
-  console.log("Dados válidos:", v);
 }
 
 
