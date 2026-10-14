@@ -1,0 +1,79 @@
+### Coleção de testes manuais da API (extensão "REST Client" do VS Code).
+### Clique em "Send Request" acima de cada bloco. Com o servidor rodando (npm run dev).
+@base = http://localhost:3000/api/tasks
+
+### 1. GET — listar todas (esperado: 200 + array)
+GET {{base}}
+
+### 2. GET — filtrar por frequência e busca (esperado: 200; busca ignora acentos)
+GET {{base}}?frequency=weekly&q=violao
+
+### 3. GET — frequência inválida (esperado: 400)
+GET {{base}}?frequency=anual
+
+### 4. GET — uma tarefa (esperado: 200)
+GET {{base}}/1
+
+### 5. GET — id que não existe (esperado: 404)
+GET {{base}}/999
+
+### 6. POST — criar (esperado: 201 + tarefa com id novo)
+POST {{base}}
+Content-Type: application/json
+
+{
+  "name": "Beber água",
+  "category": "Saúde",
+  "frequency": "daily",
+  "target": 1,
+  "time": "08:00",
+  "plan": "2 litros ao longo do dia",
+  "days": ["mon", "wed", "fri"]
+}
+
+### 7. POST — repetir o mesmo nome (esperado: 409, errors.name)
+POST {{base}}
+Content-Type: application/json
+
+{ "name": "beber água ", "category": "Saúde", "frequency": "daily", "target": 1, "time": "08:00" }
+
+### 8. POST — dados inválidos (esperado: 400 com errors por campo)
+POST {{base}}
+Content-Type: application/json
+
+{ "name": "a", "frequency": "weekly", "target": 9, "days": ["xyz"] }
+
+### 9. PUT — editar (esperado: 200)
+PUT {{base}}/2
+Content-Type: application/json
+
+{
+  "name": "Treinar violão",
+  "category": "Lazer",
+  "frequency": "weekly",
+  "target": 5,
+  "time": "19:30",
+  "plan": "Seg a sex, 30 minutos",
+  "days": ["mon", "tue", "wed", "thu", "fri"]
+}
+
+### 10. PUT — nome de OUTRA tarefa (esperado: 409)
+PUT {{base}}/2
+Content-Type: application/json
+
+{ "name": "Ler um livro", "category": "Lazer", "frequency": "weekly", "target": 4, "time": "19:00" }
+
+### 11. PATCH — alterna o check-in de uma data (esperado: 200; repetir desfaz)
+PATCH {{base}}/1
+Content-Type: application/json
+
+{ "date": "2026-10-13" }
+
+### 12. PATCH — data inválida (esperado: 400)
+PATCH {{base}}/1
+Content-Type: application/json
+
+{ "date": "13/10/2026" }
+
+### 13. DELETE — excluir (esperado: 204 sem corpo; repetir dá 404)
+DELETE {{base}}/3
