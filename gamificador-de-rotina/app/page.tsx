@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getUsers, saveUser, setSession } from "@/lib/auth";
 
 type Mode = "login" | "register";
 
@@ -9,7 +11,7 @@ export default function Login() {
   const [mode, setMode] = useState<Mode>("login");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const router = useRouter(); 
   const [v, setV] = useState({
     name: "",
     email: "",
@@ -40,16 +42,55 @@ function validar() {
   return er;
 }
 
+
 function submit(e: React.SubmitEvent<HTMLFormElement>) {
   e.preventDefault();
 
   const er = validar();
-  setErrors(er);
 
   if (Object.keys(er).length > 0) {
+    setErrors(er);
     return;
   }
+
+  // 2. Procura o usuário cadastrado
+  const usuarios = getUsers();
+  const email = v.email.trim().toLowerCase();
+
+  const usuarioExistente = usuarios.find(
+    (usuario) => usuario.email.toLowerCase() === email
+  );
+
+  if (mode === "register") {
+    if (usuarioExistente) {
+      setErrors({ email: "Este e-mail já está cadastrado." });
+      return;
+    }
+
+    const novoUsuario = {
+      name: v.name.trim(),
+      email,
+      password: v.password,
+    };
+
+    saveUser(novoUsuario);
+    setSession(novoUsuario);
+  }
+
+  else {
+    if (!usuarioExistente || usuarioExistente.password !== v.password) {
+      setErrors({ password: "E-mail ou senha incorretos." });
+      return;
+    }
+
+    setSession(usuarioExistente);
+  }
+
+  // 5. Login/cadastro concluído
+  setErrors({});
+  router.push("/tarefas");
 }
+
 
 
   return (
