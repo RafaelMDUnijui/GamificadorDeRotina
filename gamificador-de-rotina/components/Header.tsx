@@ -16,7 +16,7 @@ export default function Header({ nomeUsuario, onLogout }: HeaderProps) {
           <span className="brand-mark">
             <FlameIcon size={18} />
           </span>
-          <span className="brand-name">Gamificador de Rotina</span>
+          <span className="brand-name">AMANHÃ EU FAÇO</span>
         </div>
 
         <div className="topbar-user">
