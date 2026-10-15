@@ -1,17 +1,17 @@
 'use client';
-import { lastDays, type StreakTask } from '@/lib/streak';
+import { weekDays, type StreakTask } from '@/lib/streak';
 import { useToday } from '@/lib/use-today';
 import { CheckIcon } from './Icon';
 
-// Mini-calendário dos últimos 7 dias. Uso: <WeekDots task={task} />
+// Mini-calendário da semana atual, de domingo a sábado.
 // Não depende só de cor: feito = círculo cheio com check; não feito = círculo vazio.
 export default function WeekDots({ task }: { task: StreakTask }) {
   const now = useToday();
   if (!now) return <div className="weekdots-ph" aria-hidden="true" />;
 
-  const days = lastDays(task, 7, now);
+  const days = weekDays(task, now);
   return (
-    <ul aria-label="Check-ins dos últimos 7 dias" className="weekdots">
+    <ul aria-label="Check-ins desta semana" className="weekdots">
       {days.map((d) => (
         <li key={d.date} className={`wd ${d.isToday ? 'today' : ''}`}>
           <span aria-hidden="true" className={`wd-dot ${d.done ? 'is-done' : ''}`}>

@@ -60,15 +60,17 @@ export function bestStreak(t: StreakTask, now: string = today()): number {
   return Math.max(best, streak(t, now));
 }
 
-// últimos n dias (do mais antigo ao de hoje), marcando em quais houve check-in
+// semana atual (domingo a sábado), marcando os dias com check-in
 const WEEKDAY = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-export function lastDays(t: StreakTask, n = 7, now: string = today()): DayInfo[] {
+export function weekDays(t: StreakTask, now: string = today()): DayInfo[] {
   const out: DayInfo[] = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now + 'T12:00:00');
-    d.setDate(d.getDate() - i);
+  const sunday = new Date(now + 'T12:00:00');
+  sunday.setDate(sunday.getDate() - sunday.getDay());
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(sunday);
+    d.setDate(d.getDate() + i);
     const date = iso(d);
-    out.push({ date, label: WEEKDAY[d.getDay()], done: t.checkins.includes(date), isToday: i === 0 });
+    out.push({ date, label: WEEKDAY[d.getDay()], done: t.checkins.includes(date), isToday: date === now });
   }
   return out;
 }

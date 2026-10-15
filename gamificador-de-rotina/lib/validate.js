@@ -1,8 +1,8 @@
 export const CATEGORIES = ['Saúde', 'Trabalho', 'Estudos', 'Lazer', 'Casa'];
 export const PLAN_MAX = 300;
 export const WEEKDAYS = [
-  { key: 'mon', label: 'Seg' }, { key: 'tue', label: 'Ter' }, { key: 'wed', label: 'Qua' },
-  { key: 'thu', label: 'Qui' }, { key: 'fri', label: 'Sex' }, { key: 'sat', label: 'Sáb' }, { key: 'sun', label: 'Dom' },
+  { key: 'sun', label: 'Dom' }, { key: 'mon', label: 'Seg' }, { key: 'tue', label: 'Ter' },
+  { key: 'wed', label: 'Qua' }, { key: 'thu', label: 'Qui' }, { key: 'fri', label: 'Sex' }, { key: 'sat', label: 'Sáb' },
 ];
 const DAY_KEYS = WEEKDAYS.map((d) => d.key);
 const MAX = { daily: 1, weekly: 7, monthly: 31 };
@@ -24,5 +24,5 @@ export function validateTask(b) {
 }
 
 
-// devolve só dias válidos, sem repetir e na ordem da semana (seg → dom)
+// devolve só dias válidos, sem repetir e na ordem da semana (dom → sáb)
 export const cleanDays = (days) => DAY_KEYS.filter((k) => Array.isArray(days) && days.includes(k));
