@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUsers, saveUser, setSession } from "@/lib/auth";
-import { FlameIcon } from "@/components/Icon";
+import { LogoIcon } from "@/components/Icon";
 
 type Mode = "login" | "register";
 
@@ -104,7 +104,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
       <div className="card auth-card">
         <div className="auth-head">
           <span className="brand-mark brand-mark-lg">
-            <FlameIcon size={26} />
+            <LogoIcon size={48} />
           </span>
           <h1>AMANHÃ EU FAÇO</h1>
           <p className="sub">Organize suas tarefas e mantenha sua sequência!</p>
