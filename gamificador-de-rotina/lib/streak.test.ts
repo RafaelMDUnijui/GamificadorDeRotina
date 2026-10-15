@@ -2,7 +2,7 @@
 // Usa só o módulo nativo node:assert (sem dependências) e fixa a data de "hoje"
 // passando o parâmetro opcional "now", para o resultado não mudar com o dia da execução.
 import assert from 'node:assert/strict';
-import { streak, bestStreak, progress, lastDays, iso } from './streak';
+import { streak, bestStreak, progress, weekDays, iso } from './streak';
 import type { Frequency, StreakTask } from './streak';
 
 const NOW = '2026-10-14'; // quarta-feira; semana atual = seg 12/10 a dom 18/10
@@ -104,17 +104,19 @@ test('recorde semanal', () => {
   assert.equal(bestStreak(task('weekly', 1, c), NOW), 3);
 });
 
-console.log('Últimos 7 dias (WeekDots)');
-test('devolve 7 dias, o último é hoje, na ordem do mais antigo ao mais novo', () => {
-  const d = lastDays(task('daily', 1, []), 7, NOW);
+console.log('Semana atual (WeekDots)');
+test('devolve domingo a sábado e destaca hoje na posição do dia da semana', () => {
+  const d = weekDays(task('daily', 1, []), NOW);
   assert.equal(d.length, 7);
-  assert.equal(d[6].date, NOW);
-  assert.equal(d[6].isToday, true);
-  assert.equal(d[0].date, ago(6));
+  assert.deepEqual(d.map((day) => day.label), ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']);
+  assert.equal(d[3].date, NOW);
+  assert.equal(d[3].isToday, true);
+  assert.equal(d[0].date, '2026-10-11');
+  assert.equal(d[6].date, '2026-10-17');
 });
 test('marca corretamente os dias com check-in', () => {
-  const d = lastDays(task('daily', 1, [ago(0), ago(2)]), 7, NOW);
-  assert.deepEqual(d.map((x) => x.done), [false, false, false, false, true, false, true]);
+  const d = weekDays(task('daily', 1, [NOW, '2026-10-11']), NOW);
+  assert.deepEqual(d.map((x) => x.done), [true, false, false, true, false, false, false]);
 });
 
 console.log(`\n${passed} testes passaram${process.exitCode ? ', mas houve falhas.' : '.'}`);

@@ -1,69 +1,215 @@
-import Image from "next/image";
 
-export default function Home() {
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getUsers, saveUser, setSession } from "@/lib/auth";
+import { LogoIcon } from "@/components/Icon";
+
+type Mode = "login" | "register";
+
+export default function Login() {
+  const [mode, setMode] = useState<Mode>("login");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const router = useRouter(); 
+  const [v, setV] = useState({
+    name: "",
+    email: "",
+    password: "",
+  confirm: "",
+});
+
+const trocar = (novoMode: Mode) => {
+  setMode(novoMode);
+  setErrors({});
+};
+
+  
+function validar() {
+  const er: Record<string, string> = {};
+
+  if (mode === "register" && v.name.trim().length < 2) {
+    er.name = "Informe um nome com pelo menos 2 caracteres.";
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(v.email)) {
+    er.email = "Informe um e-mail válido.";
+  }
+
+  if (v.password.length < 6) {
+    er.password = "A senha precisa ter pelo menos 6 caracteres.";
+  }
+
+  if (mode === "register" && v.confirm !== v.password) {
+  er.confirm = "As senhas não conferem.";
+}
+
+  return er;
+}
+
+
+function submit(e: React.SubmitEvent<HTMLFormElement>) {
+  e.preventDefault();
+
+  const er = validar();
+
+  if (Object.keys(er).length > 0) {
+    setErrors(er);
+    return;
+  }
+
+  // 2. Procura o usuário cadastrado
+  const usuarios = getUsers();
+  const email = v.email.trim().toLowerCase();
+
+  const usuarioExistente = usuarios.find(
+    (usuario) => usuario.email.toLowerCase() === email
+  );
+
+  if (mode === "register") {
+    if (usuarioExistente) {
+      setErrors({ email: "Este e-mail já está cadastrado." });
+      return;
+    }
+
+    const novoUsuario = {
+      name: v.name.trim(),
+      email,
+      password: v.password,
+    };
+
+    saveUser(novoUsuario);
+    setSession(novoUsuario);
+  }
+
+  else {
+    if (!usuarioExistente || usuarioExistente.password !== v.password) {
+      setErrors({ password: "E-mail ou senha incorretos." });
+      return;
+    }
+
+    setSession(usuarioExistente);
+  }
+
+  // 5. Login/cadastro concluído
+  setErrors({});
+  router.push("/tarefas");
+}
+
+
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main id="conteudo" className="auth">
+      <div className="card auth-card">
+        <div className="auth-head">
+          <span className="brand-mark brand-mark-lg">
+            <LogoIcon size={48} />
+          </span>
+          <h1>AMANHÃ EU FAÇO</h1>
+          <p className="sub">Organize suas tarefas e mantenha sua sequência!</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="seg" role="group" aria-label="Acesso">
+          <button
+            type="button"
+            aria-pressed={mode === "login"}
+            onClick={() => trocar("login")}
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+            Já tenho conta
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={mode === "register"}
+            onClick={() => trocar("register")}
+          >
+            Criar conta
+          </button>
+        </div>
+
+        <form noValidate onSubmit={submit}>
+          {mode === "register" && (
+            <div className="field">
+              <label htmlFor="name">Nome</label>
+              <input
+                id="name"
+                type="text"
+                autoComplete="name"
+                value={v.name}
+                onChange={(e) => setV({ ...v, name: e.target.value })}
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? "name-error" : undefined}
+              />
+              {errors.name && (
+                <p id="name-error" role="alert" className="err">
+                  {errors.name}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="field">
+            <label htmlFor="email">E-mail</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              value={v.email}
+              onChange={(e) => setV({ ...v, email: e.target.value })}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            {errors.email && (
+              <p id="email-error" role="alert" className="err">
+                {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="password">Senha</label>
+            <input
+              id="password"
+              type="password"
+              autoComplete={mode === "register" ? "new-password" : "current-password"}
+              value={v.password}
+              onChange={(e) => setV({ ...v, password: e.target.value })}
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
+            />
+            {errors.password && (
+              <p id="password-error" role="alert" className="err">
+                {errors.password}
+              </p>
+            )}
+          </div>
+
+          {mode === "register" && (
+            <div className="field">
+              <label htmlFor="confirm">Confirmar senha</label>
+              <input
+                id="confirm"
+                type="password"
+                value={v.confirm}
+                onChange={(e) => setV({ ...v, confirm: e.target.value })}
+                aria-invalid={!!errors.confirm}
+                aria-describedby={errors.confirm ? "confirm-error" : undefined}
+                autoComplete="new-password"
+              />
+              {errors.confirm && (
+                <p id="confirm-error" role="alert" className="err">
+                  {errors.confirm}
+                </p>
+              )}
+            </div>
+          )}
+
+          <button type="submit" className="btn block">
+            {mode === "login" ? "Entrar" : "Cadastrar"}
+          </button>
+        </form>
+      </div>
+    </main>
   );
 }
