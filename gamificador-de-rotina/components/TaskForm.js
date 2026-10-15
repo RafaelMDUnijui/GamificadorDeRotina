@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Field from './Field';
 import { api } from '@/lib/api';
 import { CATEGORIES, PLAN_MAX, WEEKDAYS, validateTask } from '@/lib/validate';
-import styles from './TaskForm.module.css';
+import { CheckIcon } from './Icon';
 
 const EMPTY = { name: '', category: '', frequency: 'daily', target: 1, time: '', plan: '', days: [] };
 
@@ -77,13 +77,14 @@ export default function TaskForm({ task, onDirtyChange, onCancel }) {
         <Field id="time" label="Horário do lembrete" type="time" value={v.time} onChange={set('time')} error={errors.time} required />
       </div>
 
-      <fieldset className={styles.days}>
+      <fieldset className="daypicker">
         <legend>Dias da semana (opcional)</legend>
-        <div className={styles.daysList}>
+        <div className="daypicker-list">
           {WEEKDAYS.map((d) => (
-            <label key={d.key} className={styles.day}>
+            <label key={d.key} className="daypick">
               <input type="checkbox" name="days" value={d.key} checked={v.days.includes(d.key)} onChange={() => toggleDay(d.key)} />
-              {d.label}
+              <span className="wd-dot" aria-hidden="true"><CheckIcon size={16} /></span>
+              <span className="wd-label">{d.label}</span>
             </label>
           ))}
         </div>

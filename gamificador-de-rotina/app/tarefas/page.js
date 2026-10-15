@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';     
 import TaskCard from '@/components/TaskCard';
 import Modal from '@/components/Modal';
-import Header from '@/components/Header';        
+import Header from '@/components/Header';
+import { RefreshIcon, PlusIcon } from '@/components/Icon';
 import { api } from '@/lib/api';
 import { today } from '@/lib/streak';
 import { getSession, logout } from '@/lib/auth';
@@ -78,24 +79,27 @@ export default function Tarefas() {
   }
 
   return (
-    <div className="wrap">
-      {/* cabeçalho fixo no topo */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 5, background: 'var(--bg)', padding: '0 16px' }}>
-        <Header
-          nomeUsuario={user?.name || user?.email || ''}
-          onLogout={() => { logout(); router.push('/'); }}
-        />
-      </div>
+    <>
+      {/* cabeçalho fixo no topo (largura total) */}
+      <Header
+        nomeUsuario={user?.name || user?.email || ''}
+        onLogout={() => { logout(); router.push('/'); }}
+      />
 
-      <main style={{ paddingTop: 72 }}>
-        <div className="actions" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="wrap">
+      <div>
+        <div className="pagehead">
           <div>
             <h1>Minhas tarefas</h1>
-            <p style={{ color: '#aaa' }}>Acompanhe suas sequências</p>
+            <p className="sub">Acompanhe suas sequências</p>
           </div>
           <div className="actions">
-            <button className="btn ghost" onClick={retry}>🔄</button>
-            <Link className="btn" href="/tarefas/nova" tabIndex={2} style={{ outline: 'none' }}>Nova tarefa</Link>
+            <button className="btn ghost icon" onClick={retry} aria-label="Atualizar lista">
+              <RefreshIcon size={18} />
+            </button>
+            <Link className="btn" href="/tarefas/nova" tabIndex={2}>
+              <PlusIcon size={18} /> Nova tarefa
+            </Link>
           </div>
         </div>
 
@@ -106,14 +110,13 @@ export default function Tarefas() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar tarefa"
-            style={{ flex: 1, minWidth: 160, minHeight: 44, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8 }}
+            aria-label="Buscar tarefa"
           />
           {q && <button className="btn ghost" onClick={() => setQ('')}>✕</button>}
           <label>Frequência</label>
           <select
             value={freq}
             onChange={(e) => setFreq(e.target.value)}
-            style={{ minHeight: 44, padding: '8px 10px', border: '1px solid #ddd', borderRadius: 8 }}
           >
             <option value="all">Todas</option>
             <option value="daily">Diárias</option>
@@ -139,14 +142,14 @@ export default function Tarefas() {
             <TaskCard key={t.id} task={t} busy={busy} onToggle={toggle} onDelete={setToDelete} />
           ))}
         </ul>
-      </main>
+      </div>
 
       {/* modal de confirmação */}
       <Modal open={!!toDelete} title="Excluir tarefa?" onClose={() => setToDelete(null)}>
         <span onClick={() => setToDelete(null)} style={{ float: 'right', cursor: 'pointer' }}>✕</span>
-        <p style={{ color: '#999' }}>&quot;{toDelete?.name}&quot; e a sequência dela serão apagadas.</p>
+        <p className="sub">&quot;{toDelete?.name}&quot; e a sequência dela serão apagadas.</p>
         <div className="actions" style={{ marginTop: 16 }}>
-          <button className="btn" style={{ background: '#e57373', borderColor: '#e57373', color: '#fff' }} onClick={remove}>
+          <button className="btn danger" onClick={remove}>
             Excluir
           </button>
           <button className="btn ghost" onClick={() => setToDelete(null)}>Cancelar</button>
@@ -155,10 +158,11 @@ export default function Tarefas() {
 
       {/* aviso rápido */}
       {toast && (
-        <div className="toast" style={{ background: '#888', color: '#fff' }}>
+        <div className="toast">
           {toast}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
