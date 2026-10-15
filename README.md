@@ -1,6 +1,6 @@
 # Gamificador de Rotina
 
-Projeto desenvolvido na disciplina de Desenvolvimento Web.
+Projeto desenvolvido na disciplina de Programação para Interface de Usuário.
 
 ## Objetivo
 
@@ -19,6 +19,8 @@ por meio de sequencias de realizacao (streaks).
 
 ## Como executar
 
+https://gamificador-de-rotina.vercel.app/
+OU
 1. Instalar Node.js.
 2. Clonar o repositorio.
 3. Acessar a pasta gamificador-de-rotina.
@@ -27,7 +29,7 @@ por meio de sequencias de realizacao (streaks).
     npm install
     npm run dev
 
-5. Acessar https://gamificador-de-rotina.vercel.app/ no navegador.
+5. Acessar localhost:3000 no navegador.
    Se a porta estiver ocupada, utilizar a porta
    informada pelo terminal.
 
