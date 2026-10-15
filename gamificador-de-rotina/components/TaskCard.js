@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import StreakBadge from './StreakBadge';
 import WeekDots from './WeekDots';
+import { CheckIcon } from './Icon';
 import { progress, today, UNIT, PERIOD } from '@/lib/streak';
 
 export default function TaskCard({ task, onToggle, onDelete, busy }) {
@@ -21,7 +22,7 @@ export default function TaskCard({ task, onToggle, onDelete, busy }) {
         </div>
         <p className="hint">{p}/{task.target} {PERIOD[task.frequency]}{task.plan && <> — {task.plan}</>}</p>
         <p className={cumprida ? 'done' : 'q'}>
-          {cumprida ? 'Meta cumprida! 🎉' : `Você fez "${task.name}" hoje?`}
+          {cumprida ? <><CheckIcon size={16} /> Meta cumprida!</> : `Você fez "${task.name}" hoje?`}
         </p>
         <div className="actions">
           <button className={`btn ${feitaHoje ? 'ghost' : ''}`} onClick={() => onToggle(task)} disabled={busy} aria-pressed={feitaHoje}>
