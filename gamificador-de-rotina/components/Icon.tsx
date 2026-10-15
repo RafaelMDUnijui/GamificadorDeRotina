@@ -1,8 +1,13 @@
 // Ícones SVG próprios (substituem os emojis, que mudam de aparência em cada sistema).
 // Herdam a cor do texto (currentColor) e são decorativos: o significado vem do texto ao lado.
 import type { ComponentPropsWithoutRef } from 'react';
+import Image from 'next/image';
 
 type IconProps = { size?: number } & Omit<ComponentPropsWithoutRef<'svg'>, 'width' | 'height'>;
+
+export function LogoIcon({ size = 20 }: { size?: number }) {
+  return <Image src="/logo-calendario.png" alt="" width={size} height={size} aria-hidden="true" />;
+}
 
 function Svg({ size = 20, children, ...rest }: IconProps) {
   return (

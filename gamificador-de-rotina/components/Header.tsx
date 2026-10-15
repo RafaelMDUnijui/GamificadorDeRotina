@@ -1,5 +1,5 @@
 "use client";
-import { FlameIcon } from "./Icon";
+import { LogoIcon } from "./Icon";
 
 type HeaderProps = {
   nomeUsuario: string;
@@ -14,7 +14,7 @@ export default function Header({ nomeUsuario, onLogout }: HeaderProps) {
       <div className="topbar-in">
         <div className="brand">
           <span className="brand-mark">
-            <FlameIcon size={18} />
+            <LogoIcon size={32} />
           </span>
           <span className="brand-name">AMANHÃ EU FAÇO</span>
         </div>
