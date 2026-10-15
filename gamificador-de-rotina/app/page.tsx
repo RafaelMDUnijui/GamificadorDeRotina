@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUsers, saveUser, setSession } from "@/lib/auth";
+import { FlameIcon } from "@/components/Icon";
 
 type Mode = "login" | "register";
 
@@ -99,24 +100,21 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
 
 
   return (
-    <div
-     className="flex min-h-screen items-center justify-center bg-gray-100 p-4"
-    >
-      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-md">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">
-          Rotina
-        </h1>
+    <div className="auth">
+      <div className="card auth-card">
+        <div className="auth-head">
+          <span className="brand-mark brand-mark-lg">
+            <FlameIcon size={26} />
+          </span>
+          <h1>Rotina</h1>
+          <p className="sub">Organize suas tarefas e mantenha sua sequência!</p>
+        </div>
 
-        <p className="mb-6 text-gray-600">
-          Organize suas tarefas e mantenha sua sequência!
-        </p>
-
-        <div className="mb-6 flex gap-2" role="group" aria-label="Acesso">
+        <div className="seg" role="group" aria-label="Acesso">
           <button
             type="button"
             aria-pressed={mode === "login"}
             onClick={() => trocar("login")}
-            className="flex-1 rounded-lg bg-teal-700 p-3 text-white"
           >
             Entrar
           </button>
@@ -125,7 +123,6 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
             type="button"
             aria-pressed={mode === "register"}
             onClick={() => trocar("register")}
-            className="flex-1 rounded-lg bg-teal-700 p-3 text-white"
           >
             Criar conta
           </button>
@@ -133,10 +130,8 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
 
         <form noValidate onSubmit={submit}>
           {mode === "register" && (
-            <div className="mb-4">
-              <label htmlFor="name" className="mb-1 block text-gray-900">
-                Nome
-              </label>
+            <div className="field">
+              <label htmlFor="name">Nome</label>
               <input
                 id="name"
                 type="text"
@@ -144,20 +139,17 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
                 onChange={(e) => setV({ ...v, name: e.target.value })}
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? "name-error" : undefined}
-                className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
               />
               {errors.name && (
-                <p id="name-error" role="alert" className="mt-1 text-sm text-red-700">
+                <p id="name-error" role="alert" className="err">
                   {errors.name}
                 </p>
               )}
             </div>
           )}
 
-          <div className="mb-4">
-            <label htmlFor="email" className="mb-1 block text-gray-900">
-              E-mail
-            </label>
+          <div className="field">
+            <label htmlFor="email">E-mail</label>
             <input
               id="email"
               type="email"
@@ -165,19 +157,16 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
               onChange={(e) => setV({ ...v, email: e.target.value })}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
-              className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
             />
             {errors.email && (
-              <p id="email-error" role="alert" className="mt-1 text-sm text-red-700">
+              <p id="email-error" role="alert" className="err">
                 {errors.email}
               </p>
             )}
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="password" className="mb-1 block text-gray-900">
-              Senha
-            </label>
+          <div className="field">
+            <label htmlFor="password">Senha</label>
             <input
               id="password"
               type="password"
@@ -185,44 +174,35 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
               onChange={(e) => setV({ ...v, password: e.target.value })}
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? "password-error" : undefined}
-              className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
             />
             {errors.password && (
-              <p id="password-error" role="alert" className="mt-1 text-sm text-red-700">
+              <p id="password-error" role="alert" className="err">
                 {errors.password}
               </p>
             )}
           </div>
 
-            {mode === "register" && (
-          <div className="mb-6">
-            <label htmlFor="confirm" className="mb-1 block text-gray-900">
-            Confirmar senha
-            </label>
+          {mode === "register" && (
+            <div className="field">
+              <label htmlFor="confirm">Confirmar senha</label>
+              <input
+                id="confirm"
+                type="password"
+                value={v.confirm}
+                onChange={(e) => setV({ ...v, confirm: e.target.value })}
+                aria-invalid={!!errors.confirm}
+                aria-describedby={errors.confirm ? "confirm-error" : undefined}
+                autoComplete="new-password"
+              />
+              {errors.confirm && (
+                <p id="confirm-error" role="alert" className="err">
+                  {errors.confirm}
+                </p>
+              )}
+            </div>
+          )}
 
-            <input
-            id="confirm"
-            type="password"
-            value={v.confirm}
-            onChange={(e) => setV({ ...v, confirm: e.target.value })}
-            aria-invalid={!!errors.confirm}
-            aria-describedby={errors.confirm ? "confirm-error" : undefined}
-            autoComplete="new-password"
-            className="w-full rounded-lg border border-gray-400 p-3 text-gray-900"
-            />
-
-            {errors.confirm && (
-              <p id="confirm-error" role="alert" className="mt-1 text-sm text-red-700">
-                {errors.confirm}
-             </p>
-            )}
-          </div>
-            )}
-
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-teal-700 p-3 font-bold text-white"
-          >
+          <button type="submit" className="btn block">
             {mode === "login" ? "Entrar" : "Criar conta"}
           </button>
         </form>
