@@ -106,7 +106,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
           <span className="brand-mark brand-mark-lg">
             <FlameIcon size={26} />
           </span>
-          <h1>Rotina</h1>
+          <h1>AMANHÃ EU FAÇO</h1>
           <p className="sub">Organize suas tarefas e mantenha sua sequência!</p>
         </div>
 
@@ -116,7 +116,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
             aria-pressed={mode === "login"}
             onClick={() => trocar("login")}
           >
-            Entrar
+            Já tenho conta
           </button>
 
           <button
@@ -203,7 +203,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
           )}
 
           <button type="submit" className="btn block">
-            {mode === "login" ? "Entrar" : "Criar conta"}
+            {mode === "login" ? "Entrar" : "Cadastrar"}
           </button>
         </form>
       </div>

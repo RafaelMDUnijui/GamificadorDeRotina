@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gamificador de Rotina",
+  title: "AMANHÃ EU FAÇO",
   description: "Sistema de gerenciamento de tarefas e hábitos",
 };
 
