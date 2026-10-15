@@ -100,7 +100,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
 
 
   return (
-    <div className="auth">
+    <main id="conteudo" className="auth">
       <div className="card auth-card">
         <div className="auth-head">
           <span className="brand-mark brand-mark-lg">
@@ -135,6 +135,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
               <input
                 id="name"
                 type="text"
+                autoComplete="name"
                 value={v.name}
                 onChange={(e) => setV({ ...v, name: e.target.value })}
                 aria-invalid={!!errors.name}
@@ -153,6 +154,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={v.email}
               onChange={(e) => setV({ ...v, email: e.target.value })}
               aria-invalid={!!errors.email}
@@ -170,6 +172,7 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
             <input
               id="password"
               type="password"
+              autoComplete={mode === "register" ? "new-password" : "current-password"}
               value={v.password}
               onChange={(e) => setV({ ...v, password: e.target.value })}
               aria-invalid={!!errors.password}
@@ -207,6 +210,6 @@ function submit(e: React.SubmitEvent<HTMLFormElement>) {
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

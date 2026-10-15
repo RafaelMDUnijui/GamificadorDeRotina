@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex flex-1 items-center justify-center px-6 py-12">
+    <main id="conteudo" className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="max-w-md text-center">
-        <h1 className="text-6xl font-bold text-blue-700 dark:text-blue-300">
+        <h1 className="text-6xl font-bold text-[var(--accent)]">
           404
         </h1>
 
@@ -18,11 +18,11 @@ export default function NotFound() {
 
         <Link
           href="/"
-          className="mt-6 inline-block rounded-lg bg-blue-700 px-6 py-3 font-medium text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600"
+          className="btn mt-6"
         >
           Voltar para o início
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

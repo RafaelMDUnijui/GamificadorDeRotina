@@ -37,7 +37,7 @@ export default function Editar({ params }) {
   }, [id, isNew, router]);
 
   return (
-    <div className="wrap">
+    <main id="conteudo" className="wrap">
       <Link
         href="/tarefas"
         className="btn ghost"
@@ -64,6 +64,6 @@ export default function Editar({ params }) {
           <button className="btn ghost" onClick={() => setConfirmLeave(false)}>Continuar editando</button>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 }

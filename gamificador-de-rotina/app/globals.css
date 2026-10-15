@@ -196,7 +196,7 @@
   }
   .toolbar label { color: var(--mute); font-size: 0.9375rem; }
   .toolbar input[type="search"] { flex: 1; min-inline-size: 11rem; }
-  .toolbar :where(input, select) {
+  .toolbar :where(input[type="search"], select) {
     min-block-size: 2.75rem;
     padding: 0.5rem 0.875rem;
     border: 1px solid var(--line-strong);
@@ -205,8 +205,34 @@
     color: var(--ink);
     font: inherit;
   }
+  .toolbar .filter-check { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .toolbar .filter-check input { inline-size: 1.125rem; block-size: 1.125rem; accent-color: var(--accent); }
 
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, max-content);
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .summary-item {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.25rem;
+    text-align: left;
+  }
+  .summary strong { color: var(--ink); font-size: 1.25rem; line-height: 1.2; }
+  .summary-item span { color: var(--mute); }
+  .result-count { margin: 0 0 0.75rem; color: var(--mute); font-size: 0.9375rem; }
+  @media (max-width: 34rem) {
+    .summary { grid-template-columns: 1fr; }
+    .summary-item { align-items: center; text-align: center; }
+  }
 
   /* ---------- cartão de tarefa ---------- */
   .card {
@@ -449,6 +475,7 @@
 
   /* ---------- modal ---------- */
   dialog {
+    position: relative;
     margin: auto;
     inline-size: min(26rem, calc(100vw - 2rem));
     padding: 1.5rem;
@@ -458,6 +485,7 @@
     color: var(--ink);
     box-shadow: 0 20px 50px rgb(0 0 0 / 0.3);
   }
+  dialog .modal-close { position: absolute; inset-block-start: 0.75rem; inset-inline-end: 0.75rem; }
   dialog::backdrop { background: rgb(8 14 12 / 0.55); backdrop-filter: blur(2px); }
   dialog .actions { justify-content: flex-end; }
 
