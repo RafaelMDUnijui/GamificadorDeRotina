@@ -15,7 +15,14 @@ async function req(url, opcoes = {}) {
 const json = (method, body) => ({ method, body: JSON.stringify(body) });
 
 export const api = {
-  list: () => req('/api/tasks'),
+  list: (filters = {}) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value) params.set(key, value);
+    }
+    const query = params.toString();
+    return req(`/api/tasks${query ? `?${query}` : ''}`);
+  },
   get: (id) => req(`/api/tasks/${id}`),
   create: (b) => req('/api/tasks', json('POST', b)),
   update: (id, b) => req(`/api/tasks/${id}`, json('PUT', b)),

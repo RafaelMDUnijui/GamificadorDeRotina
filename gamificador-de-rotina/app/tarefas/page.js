@@ -1,168 +1,227 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';     
+import { useRouter } from 'next/navigation';
 import TaskCard from '@/components/TaskCard';
 import Modal from '@/components/Modal';
 import Header from '@/components/Header';
+import Toast from '@/components/Toast';
 import { RefreshIcon, PlusIcon } from '@/components/Icon';
 import { api } from '@/lib/api';
-import { today } from '@/lib/streak';
+import { progress, streak, today } from '@/lib/streak';
 import { getSession, logout } from '@/lib/auth';
-import { useSession } from '@/lib/use-session';  
+import { useSession } from '@/lib/use-session';
 
 export default function Tarefas() {
-  const router = useRouter();                       
-  const user = useSession();                       // dados de quem está logado
-  const [tasks, setTasks] = useState(null);
-  const [error, setError] = useState('');
+  const router = useRouter();
+  const user = useSession();
   const [q, setQ] = useState('');
-  const [freq, setFreq] = useState('all');
+  const [frequency, setFrequency] = useState('');
+  const [refresh, setRefresh] = useState(0);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
-  const [toDelete, setToDelete] = useState(null);  //  tarefa que o modal vai excluir
+  const [toDelete, setToDelete] = useState(null);
+  const addTaskLink = useRef(null);
+  const restoreFocusAfterDelete = useRef(false);
+  const toastTimer = useRef(null);
+  const requestKey = JSON.stringify([q, frequency, refresh]);
+  const [loaded, setLoaded] = useState({ key: '', tasks: null, error: '' });
+  const tasks = loaded.key === requestKey ? loaded.tasks : null;
+  const error = loaded.key === requestKey ? loaded.error : '';
 
-  // busca as tarefas na API (usada na carga inicial)
-  const load = useCallback(() => {
-    api.list().then(setTasks).catch((e) => setError(e.message));
-  }, []);
-
-  // recarga manual (botão 🔄 e "Tentar de novo"): limpa o erro antes de buscar
-  const retry = () => {
-    setError('');
-    load();
-  };
-
-  // só carrega as tarefas se houver sessão; senão volta para o login
   useEffect(() => {
     if (!getSession()) {
       router.replace('/');
       return;
     }
-    load();
-  }, [router, load]);
 
-  // NÃO é state, é calculado a cada desenho a partir de tasks, q e freq
-  const shown = (tasks || []).filter(
-    (t) => (freq === 'all' || t.frequency === freq) && t.name.toLowerCase().includes(q.toLowerCase())
-  );
+    let active = true;
+    api.list({ q, frequency })
+      .then((result) => {
+        if (active) setLoaded({ key: requestKey, tasks: result, error: '' });
+      })
+      .catch((requestError) => {
+        if (active) setLoaded({ key: requestKey, tasks: null, error: requestError.message });
+      });
 
-  // mostra uma mensagem e some depois de 2,5 s
-  const avisar = (m) => {
-    setToast(m);
-    setTimeout(() => setToast(''), 2500);
+    return () => {
+      active = false;
+    };
+  }, [router, q, frequency, refresh, requestKey]);
+
+  useEffect(() => {
+    if (restoreFocusAfterDelete.current) {
+      addTaskLink.current?.focus();
+      restoreFocusAfterDelete.current = false;
+    }
+  }, [tasks]);
+
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
+
+  const retry = () => {
+    setRefresh((current) => current + 1);
   };
 
-  // liga/desliga o check-in de hoje
-  async function toggle(t) {
+  const avisar = (message) => {
+    clearTimeout(toastTimer.current);
+    setToast(message);
+    toastTimer.current = setTimeout(() => setToast(''), 2500);
+  };
+
+  const filteredTasks = tasks || [];
+  const completedCount = filteredTasks.filter(
+    (task) => progress(task) >= task.target
+  ).length;
+  const longestStreak = filteredTasks.reduce(
+    (longest, task) => Math.max(longest, streak(task)),
+    0
+  );
+  const shown = filteredTasks;
+
+  async function toggle(task) {
     setBusy(true);
     try {
-      const atualizada = await api.toggle(t.id, today());
-      setTasks((lista) => lista.map((x) => (x.id === atualizada.id ? atualizada : x)));
+      const updated = await api.toggle(task.id, today());
+      setLoaded((current) => current.key === requestKey
+        ? { ...current, tasks: current.tasks.map((item) => item.id === updated.id ? updated : item) }
+        : current);
       avisar('Check-in atualizado!');
-    } catch (e) {
-      avisar(e.message);
+    } catch (actionError) {
+      avisar(actionError.message);
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   }
 
-  // exclui de verdade (só chamada pelo botão do modal)
   async function remove() {
+    if (!toDelete) return;
     try {
       await api.remove(toDelete.id);
-      setTasks((lista) => lista.filter((x) => x.id !== toDelete.id));
+      setLoaded((current) => current.key === requestKey
+        ? { ...current, tasks: current.tasks.filter((task) => task.id !== toDelete.id) }
+        : current);
+      restoreFocusAfterDelete.current = true;
       avisar('Tarefa excluída.');
-    } catch (e) {
-      avisar(e.message);
+    } catch (actionError) {
+      avisar(actionError.message);
+    } finally {
+      setToDelete(null);
     }
-    setToDelete(null);   // fecha o modal
   }
 
   return (
     <>
-      {/* cabeçalho fixo no topo (largura total) */}
       <Header
         nomeUsuario={user?.name || user?.email || ''}
         onLogout={() => { logout(); router.push('/'); }}
       />
 
-      <div className="wrap">
-      <div>
+      <main id="conteudo" className="wrap">
         <div className="pagehead">
           <div>
             <h1>Minhas tarefas</h1>
             <p className="sub">Acompanhe suas sequências</p>
           </div>
           <div className="actions">
-            <button className="btn ghost icon" onClick={retry} aria-label="Atualizar lista">
+            <button type="button" className="btn ghost icon" onClick={retry} aria-label="Atualizar lista">
               <RefreshIcon size={18} />
             </button>
-            <Link className="btn" href="/tarefas/nova" tabIndex={2}>
+            <Link ref={addTaskLink} className="btn" href="/tarefas/nova">
               <PlusIcon size={18} /> Nova tarefa
             </Link>
           </div>
         </div>
 
-        {/*busca e filtro */}
+        {tasks && (
+          <section className="summary card" aria-label="Resumo das tarefas">
+            <p className="summary-item">
+              <strong>{tasks.length}</strong>
+              <span>{tasks.length === 1 ? 'tarefa encontrada' : 'tarefas encontradas'}</span>
+            </p>
+            <p className="summary-item">
+              <strong>{completedCount}</strong>
+              <span>{completedCount === 1 ? 'meta cumprida' : 'metas cumpridas'} no período</span>
+            </p>
+            <p className="summary-item">
+              <strong>{longestStreak}</strong>
+              <span>maior sequência</span>
+            </p>
+          </section>
+        )}
+
         <div className="toolbar">
           <input
+            id="busca-tarefa"
             type="search"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
+            onChange={(event) => setQ(event.target.value)}
             placeholder="Buscar tarefa"
             aria-label="Buscar tarefa"
           />
-          {q && <button className="btn ghost" onClick={() => setQ('')}>✕</button>}
-          <label>Frequência</label>
+          {q && (
+            <button type="button" className="btn ghost icon" onClick={() => setQ('')} aria-label="Limpar busca">
+              ✕
+            </button>
+          )}
+          <label htmlFor="filtro-frequencia">Frequência</label>
           <select
-            value={freq}
-            onChange={(e) => setFreq(e.target.value)}
+            id="filtro-frequencia"
+            value={frequency}
+            onChange={(event) => setFrequency(event.target.value)}
           >
-            <option value="all">Todas</option>
+            <option value="">Todas</option>
             <option value="daily">Diárias</option>
             <option value="weekly">Semanais</option>
             <option value="monthly">Mensais</option>
           </select>
         </div>
 
+        {tasks && (
+          <p className="result-count" role="status" aria-live="polite">
+            Mostrando {shown.length} de {tasks.length} {tasks.length === 1 ? 'tarefa' : 'tarefas'}.
+          </p>
+        )}
+
         {error && (
-          <div className="alert">
-            {error} <div className="btn ghost" onClick={retry}>Tentar de novo</div>
+          <div className="alert" role="alert">
+            <span>{error}</span>
+            <button type="button" className="btn ghost" onClick={retry}>Tentar de novo</button>
           </div>
         )}
-        {!tasks && !error && <p>Carregando tarefas…</p>}
+        {!tasks && !error && <p role="status" aria-live="polite">Carregando tarefas…</p>}
         {tasks && !shown.length && (
           <div className="card empty">
-            <p>{tasks.length ? 'Nenhuma tarefa encontrada com esse filtro.' : 'Você ainda não tem tarefas.'}</p>
-            {!tasks.length && <Link href="/tarefas/nova">Clique aqui</Link>}
+            <p>{tasks.length ? 'Nenhuma tarefa encontrada com esses filtros.' : 'Você ainda não tem tarefas.'}</p>
+            {!tasks.length && <Link href="/tarefas/nova">Criar sua primeira tarefa</Link>}
           </div>
         )}
         <ul className="list">
-          {shown.map((t) => (
-            <TaskCard key={t.id} task={t} busy={busy} onToggle={toggle} onDelete={setToDelete} />
+          {shown.map((task) => (
+            <TaskCard key={task.id} task={task} busy={busy} onToggle={toggle} onDelete={setToDelete} />
           ))}
         </ul>
-      </div>
+      </main>
 
-      {/* modal de confirmação */}
       <Modal open={!!toDelete} title="Excluir tarefa?" onClose={() => setToDelete(null)}>
-        <span onClick={() => setToDelete(null)} style={{ float: 'right', cursor: 'pointer' }}>✕</span>
+        <button
+          type="button"
+          className="btn ghost sm modal-close"
+          onClick={() => setToDelete(null)}
+          aria-label="Fechar confirmação"
+        >
+          ✕
+        </button>
         <p className="sub">&quot;{toDelete?.name}&quot; e a sequência dela serão apagadas.</p>
         <div className="actions" style={{ marginTop: 16 }}>
-          <button className="btn danger" onClick={remove}>
+          <button type="button" className="btn danger" onClick={remove}>
             Excluir
           </button>
-          <button className="btn ghost" onClick={() => setToDelete(null)}>Cancelar</button>
+          <button type="button" className="btn ghost" onClick={() => setToDelete(null)}>Cancelar</button>
         </div>
       </Modal>
 
-      {/* aviso rápido */}
-      {toast && (
-        <div className="toast">
-          {toast}
-        </div>
-      )}
-      </div>
+      <Toast message={toast} />
     </>
   );
 }
